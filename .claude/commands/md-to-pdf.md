@@ -1,6 +1,6 @@
 ---
 description: Convert existing markdown files to a PDF
-argument-hint: [md-file-or-folder] [output.pdf]
+argument-hint: [md-file-or-folder] [output.pdf] [--no-cover]
 allowed-tools: Read, Write, Glob, Bash(node *), Bash(rm *)
 model: sonnet
 ---
@@ -14,7 +14,10 @@ Convert one markdown file or all markdown files in a folder to a single styled P
 
 ## Arguments
 
-Parse $ARGUMENTS as space-separated: first word is a path to a single `.md` file **or** a folder containing `.md` files; second word (optional) is the output PDF path.
+Parse $ARGUMENTS as space-separated tokens:
+- First non-flag token: path to a single `.md` file **or** a folder containing `.md` files
+- Second non-flag token (optional): output PDF path
+- `--no-cover`: flag (any position) — omit the cover page from the output
 
 - If no path is provided, ask the user: "Path to a markdown file or folder?"
 - Determine whether the path is a file or a folder:
@@ -42,18 +45,37 @@ Read each `.md` file. For each file derive:
 
 Use the folder's parent directory name, title-cased. If a `package.json` exists nearby with a `name` field, use that instead.
 
-### 4. Build and write the HTML file
+### 4. Detect content type
+
+Read all file contents and classify the document with a short cover label (2–4 words, title-cased). Use the content itself as the signal — do not rely on filenames alone. Examples:
+
+| Content signals | Cover label |
+|---|---|
+| Code architecture, APIs, services, infrastructure, setup instructions | `Technical Documentation` |
+| Action items, attendees, date, decisions | `Meeting Notes` |
+| Goals, timeline, budget, stakeholders | `Project Proposal` |
+| Findings, methodology, conclusions | `Research Report` |
+| Step-by-step guide, instructions, how-to | `User Guide` |
+| Changelog, release notes, version history | `Release Notes` |
+| Anything else | Infer a fitting 2–4 word label from the content |
+
+### 5. Build and write the HTML file
 
 Read `.claude/templates/docs.html` and replace these placeholders:
 
 | Placeholder | Value |
 |---|---|
 | `{{TITLE}}` | Document title from step 3 |
+| `{{COVER_TAG}}` | Cover label from step 4 |
 | `{{DATE}}` | Today's date |
 | `{{TOC_ITEMS}}` | One `<li>` per file |
 | `{{SECTIONS}}` | One `.page.section-page` div per file |
 | `{{MD_SCRIPTS}}` | One `<script type="text/plain" id="mdN">` per file with raw markdown |
 | `{{SECTION_COUNT}}` | Total number of files |
+
+**Cover page**: if `--no-cover` was passed, remove the entire `<div class="page cover">...</div>` block from the HTML.
+
+**TOC page**: if there is only one section, remove the entire `<div class="page toc-page">...</div>` block from the HTML.
 
 TOC `<li>` format (zero-padded number, title, description):
 ```html

@@ -92,6 +92,7 @@ Read `.claude/templates/docs.html` and fill in these placeholders. **Do not chan
 | Placeholder | Value |
 |---|---|
 | `{{TITLE}}` | Project name |
+| `{{COVER_TAG}}` | `Technical Documentation` |
 | `{{DATE}}` | Today's date |
 | `{{TOC_ITEMS}}` | Five `<li>` elements — one per section |
 | `{{SECTIONS}}` | Five `.page.section-page` divs with a `.content` div each |
