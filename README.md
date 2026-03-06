@@ -55,14 +55,10 @@ Converts an existing Markdown file or folder of Markdown files into a single sty
 
 ## Installation
 
-Copy the `.claude` folder into your project root:
+Run this from your project root:
 
 ```bash
-# From inside your project
-git clone https://github.com/YOUR_USERNAME/generate-docs /tmp/generate-docs
-cp -r /tmp/generate-docs/.claude .
+curl -fsSL https://raw.githubusercontent.com/MarceloDJunior/generate-docs/main/install.sh | bash
 ```
 
-Or clone this repo and copy manually. After copying, run Claude Code in your project and the `/generate-docs` and `/md-to-pdf` commands will be available.
-
-> The commands use `.claude/scripts/html-to-pdf.js` and `.claude/templates/docs.html` internally — these must be present in your project's `.claude` folder.
+That's it. The `/generate-docs` and `/md-to-pdf` commands will be available the next time you open Claude Code in that project.
