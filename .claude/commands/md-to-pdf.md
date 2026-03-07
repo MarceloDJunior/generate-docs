@@ -9,17 +9,19 @@ Convert one markdown file or all markdown files in a folder to a single styled P
 
 ## Behavior
 - Work silently through all steps without narrating what you are doing. Do not write messages like "I will read...", "Reading files...", "Now I'll build...", "Converting...", etc.
-- Only ask questions when information is truly ambiguous and cannot be inferred. Otherwise proceed without prompting.
+- Only ask questions about **file contents or ambiguous input** when they cannot be inferred. Otherwise proceed without prompting. This rule does NOT apply to missing required arguments — those must always be asked (see Arguments).
 - Do not run `mkdir`. The Write tool creates parent directories automatically.
 
 ## Arguments
+
+**Before doing anything else** — before reading any files, before any steps — resolve the input path. Do not begin Step 1 until the path is confirmed.
 
 Parse $ARGUMENTS as space-separated tokens:
 - First non-flag token: path to a single `.md` file **or** a folder containing `.md` files
 - Second non-flag token (optional): output PDF path
 - `--no-cover`: flag (any position) — omit the cover page from the output
 
-- If no path is provided, ask the user: "Path to a markdown file or folder?"
+- If no path is provided, **stop and ask the user**: "Path to a markdown file or folder?"
 - Determine whether the path is a file or a folder:
   - **File**: use that single `.md` file as the only section.
   - **Folder**: discover all `.md` files inside it (see Step 1).

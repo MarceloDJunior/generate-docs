@@ -12,7 +12,7 @@ All output files must be written relative to the **current working directory** (
 
 ## Behavior
 - Work silently through all steps without narrating what you are doing. Do not write messages like "I will create...", "Creating...", "Now I'll...", etc.
-- Only ask questions when information is truly ambiguous and cannot be inferred from the codebase. Otherwise proceed without prompting.
+- Only ask questions about the **codebase** when information is truly ambiguous and cannot be inferred. Otherwise proceed without prompting. This rule does NOT apply to missing arguments — those must always be asked (see Arguments).
 - Do not run `mkdir`. Use the Write tool directly — it creates parent directories automatically.
 - Never use `ls`, `find`, `cat`, `head`, `tail`, or `grep` shell commands. Use `Glob` for file discovery, `Read` for file contents, and `Grep` for searching file contents.
 - **Never fabricate, assume, or infer information that is not directly supported by the code.** Every claim in the documentation must be traceable to something you actually read. If a piece of information is not found, **omit it entirely** — do not fill the gap with guesses, plausible-sounding details, or vague placeholders.
@@ -21,9 +21,12 @@ All output files must be written relative to the **current working directory** (
 - **When in doubt, leave it out.** If you are not 100% certain a fact is supported by code you have read, do not write it. Speculation, educated guesses, and "likely" or "probably" statements are strictly forbidden. Silence is always preferable to a wrong or unverified claim.
 
 ## Arguments
+
+**Before doing anything else** — before reading the codebase, before any steps — resolve the output type and name. Do not begin Step 1 until both values are confirmed.
+
 Parse $ARGUMENTS as space-separated: first word is output type, second word (if present) is the name.
 
-- If $ARGUMENTS is empty or either value is missing, **ask the user before proceeding using numbered alternatives** — do not ask them to type free-form answers except for folder/file names:
+- If $ARGUMENTS is empty or either value is missing, **stop and ask the user using numbered alternatives** — do not ask them to type free-form answers except for folder/file names:
   - Output type: present as a numbered choice, e.g. "Which output format? 1) Markdown (multiple .md files)  2) PDF (single styled document)"
   - For **markdown**: ask for the folder name with the default shown, e.g. "Folder name? (default: `docs`)" — user types the name or presses Enter to accept default
   - For **pdf**: ask for the output file name with the default shown, e.g. "Output file name? (default: `documentation.pdf`)" — user types the name or presses Enter to accept default
