@@ -68,10 +68,16 @@ Main system flows ordered by importance first, then by natural execution order w
 **Only include flows with confirmed entry points.** Before adding a flow, verify that it is reachable via an actual entry point — an HTTP route called by the UI, a queue consumer triggered by a producer, a scheduled cron, a Lambda invoked from code, or a UI action backed by a handler. If a flow exists in code but you cannot find evidence that anything calls or triggers it, omit it. Do not document flows speculatively.
 
 ### 5. Create `integrations.md`
-All external service integrations that require API keys or credentials (not internal libraries). For each: why/how it is used, any dependencies (VPN, certificates, etc.), and a link to its documentation.
+Third-party providers that interact with the application at runtime and require API keys or credentials (e.g. payment gateways, email providers, SMS services, analytics, OAuth providers). For each: why/how it is used, any dependencies (VPN, certificates, etc.), and a link to its documentation.
+
+Do not include cloud infrastructure services (e.g. AWS, GCP, Azure, or their individual services like S3, SQS, RDS) — those belong in `infrastructure.md` and may be referenced in `flows.md` where relevant.
 
 ### 6. Create `setup.md`
-Comprehensive instructions for running the project for the first time. Do not list or suggest specific environment variable values — instead, instruct the reader to request the `.env` file or credentials from a team member. Only document the variable names if they are clearly visible in committed config files (e.g. `.env.example`).
+Comprehensive instructions for running the project for the first time. Do not list or suggest specific environment variable values.
+
+For environment variables:
+- If a `.env.example` file exists in the project: reference it directly (e.g. "Copy `.env.example` to `.env` and fill in the values"). Do not enumerate the variables — the file is the source of truth.
+- If no `.env.example` exists: list only the variable names visible in committed config files, and instruct the reader to request the values from a team member.
 
 ## PDF Output
 
