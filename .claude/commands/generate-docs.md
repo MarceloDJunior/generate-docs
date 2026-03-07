@@ -22,16 +22,23 @@ All output files must be written relative to the **current working directory** (
 
 ## Arguments
 
-**Before doing anything else** — before reading the codebase, before any steps — resolve the output type and name. Do not begin Step 1 until both values are confirmed.
+**Before doing anything else** — before reading the codebase, before any steps — resolve the output type and name by following the steps below in order. Do not begin Step 1 until the user has answered every required question.
+
+You may never assume or default these values. Each missing value requires a real response from the user.
 
 Parse $ARGUMENTS as space-separated: first word is output type, second word (if present) is the name.
 
-- If $ARGUMENTS is empty or either value is missing, **stop and ask the user using numbered alternatives** — do not ask them to type free-form answers except for folder/file names:
-  - Output type: present as a numbered choice, e.g. "Which output format? 1) Markdown (multiple .md files)  2) PDF (single styled document)"
-  - For **markdown**: ask for the folder name with the default shown, e.g. "Folder name? (default: `docs`)" — user types the name or presses Enter to accept default
-  - For **pdf**: ask for the output file name with the default shown, e.g. "Output file name? (default: `documentation.pdf`)" — user types the name or presses Enter to accept default
+**Question 1 — if output type is missing:**
+Send this message and stop: "Which output format?  1) Markdown (multiple .md files)  2) PDF (single styled document)"
+Do not ask anything else in the same message. Wait for the user to reply before continuing.
+
+**Question 2 — if name is missing (ask this as a separate message, after Question 1 is answered):**
+- For **markdown**: send "Output folder name? (default: `docs`)" and stop. Wait for the user to reply.
+- For **pdf**: send "Output file name? (default: `documentation.pdf`)" and stop. Wait for the user to reply.
+
+**Rules:**
 - Output type must be `markdown` or `pdf` only
-- For **markdown**: the name is the output folder. If it already exists, present as a numbered choice, e.g. "Folder already exists. 1) Proceed and overwrite  2) Cancel"
+- For **markdown**: the name is the output folder. If it already exists, ask "Folder `<name>` already exists.  1) Proceed and overwrite  2) Cancel" and wait for reply.
 - For **pdf**: the name is the output PDF file path. Write the temp HTML to `_temp_docs.html` at the project root.
 
 ## Steps
