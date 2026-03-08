@@ -63,14 +63,32 @@ Wait for the user to reply before continuing.
 High-level system overview: what it is, the architectural pattern (e.g. MVC, event-driven, microservices), the main structural layers and their responsibilities, and how those layers communicate. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
 ### 3. Create `infrastructure.md`
-Languages and runtime versions, frameworks, core libraries, hosting, cloud services, monitoring/alerting (if present), logging, each environment (dev/staging/prod) and how they differ, secrets management, release and deployment process. Use exact URLs and environment names from READMEs — no placeholders.
+Use bullet points for every list. Never write multiple items as a comma-separated sentence. Cover:
+- **Languages & runtimes**: one bullet per language/runtime with its version
+- **Frameworks**: one bullet per framework with its version
+- **Core libraries**: one bullet per notable library with its version
+- **Hosting & cloud services**: one bullet per service
+- **Monitoring & alerting**: one bullet per tool (omit if none found)
+- **Logging**: how logs are collected and where they go
+- **Environments**: one subsection per environment (dev/staging/prod) describing what differs
+- **Secrets management**: how secrets are stored and injected
+- **Release & deployment**: the exact steps or commands to deploy
+
+Use exact URLs and environment names from READMEs — no placeholders.
 
 For multi-project repos, document each subproject's infrastructure in its own clearly labelled section. Do not merge or mix infrastructure details across subprojects.
 
 ### 4. Create `flows.md`
 Main system flows, ordered first by importance, then by the natural sequence in which they occur in the system (e.g. authentication before checkout, onboarding before core actions). High-level only — no individual fields or implementation details. Include a Mermaid diagram (sequence or flowchart) per flow.
 
-Only include flows with a confirmed entry point (HTTP route, queue consumer, cron, Lambda invocation, UI action). Omit anything unreachable.
+**Reachability gate — apply before writing any flow:**
+A flow is eligible only if you can trace an unbroken chain from a concrete entry point to each step you describe:
+1. Identify the entry point: a registered HTTP route, a queue/topic consumer, a scheduled cron expression, a Lambda/function handler wired to a trigger, or a UI action that calls real code.
+2. Follow the call chain from that entry point through the actual code you read. Every step in the flow must appear in that chain.
+3. If any step relies on a function, handler, or service you have not read, or whose wiring to the entry point you cannot confirm, stop the chain there and omit the unconfirmed steps.
+4. If no entry point can be found for a function or module — even if it looks important — omit the flow entirely.
+
+Do not document a flow because a handler exists. Document it only because a confirmed trigger calls that handler.
 
 ### 5. Create `integrations.md`
 Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling), dependencies (VPN, certs, etc.), and a link to its documentation.
