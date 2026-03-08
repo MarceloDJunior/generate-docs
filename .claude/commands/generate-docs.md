@@ -51,7 +51,7 @@ Wait for the user to reply before continuing.
 - Read 2–3 representative files per major layer (routes, services, models, workers)
 - Note any existing docs
 
-**Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo:
+**Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo. Only call it a monorepo if there is a single `.git` folder at the root — if each subdirectory has its own `.git`, they are independent projects; document all of them but do not use the term "monorepo":
 - Read every subproject's README
 - Explore each subproject as above
 - Check for cross-project links: shared API calls, event contracts, URLs, auth, data stores
@@ -79,7 +79,7 @@ Use exact URLs and environment names from READMEs — no placeholders.
 For multi-project repos, document each subproject's infrastructure in its own clearly labelled section. Do not merge or mix infrastructure details across subprojects.
 
 ### 4. Create `flows.md`
-Main system flows, ordered first by importance, then by the natural sequence in which they occur in the system (e.g. authentication before checkout, onboarding before core actions). High-level only — no individual fields or implementation details. Include a Mermaid diagram (sequence or flowchart) per flow.
+Main system flows, ordered by importance: core product flows first, then auth, onboarding, supporting flows (notifications, jobs), admin last. Within each group, follow natural sequence (e.g. registration before login, login before checkout). High-level only — no individual fields or implementation details. Include a Mermaid diagram (sequence or flowchart) per flow.
 
 **Reachability gate — apply before writing any flow:**
 A flow is eligible only if you can trace an unbroken chain from a concrete entry point to each step you describe:
