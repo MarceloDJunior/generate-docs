@@ -7,103 +7,87 @@ model: sonnet
 
 Read the codebase and write comprehensive documentation for the project.
 
-## Output location
-All output files must be written relative to the **current working directory** (the directory where this command was invoked), not to any subdirectory discovered during codebase exploration. For example, if the output folder is `docs`, write to `./docs/architecture.md` — never to `./some-subfolder/docs/architecture.md`.
+> **Write only what you read.** Every claim must trace to code you actually read. If not found, omit it. No guesses, no "likely", no "probably". When in doubt, leave it out.
 
 ## Behavior
-- Work silently through all steps without narrating what you are doing. Do not write messages like "I will create...", "Creating...", "Now I'll...", etc.
-- Only ask questions about the **codebase** when information is truly ambiguous and cannot be inferred. Otherwise proceed without prompting. This rule does NOT apply to missing arguments — those must always be asked (see Arguments).
-- Do not run `mkdir`. Use the Write tool directly — it creates parent directories automatically.
-- Never use `ls`, `find`, `cat`, `head`, `tail`, or `grep` shell commands. Use `Glob` for file discovery, `Read` for file contents, and `Grep` for searching file contents.
-- **Never fabricate, assume, or infer information that is not directly supported by the code.** Every claim in the documentation must be traceable to something you actually read. If a piece of information is not found, **omit it entirely** — do not fill the gap with guesses, plausible-sounding details, or vague placeholders.
-- **Do not complete partial flows with assumed steps.** If only one side of an interaction is visible in the codebase (e.g. consuming a resource but not creating it), document only what you can see. Do not infer what other actors, services, or packages do unless you have read their code and found explicit evidence.
-- **Do not attribute a capability to a package based on circumstantial evidence.** Finding a related constant, config field, or data type is not sufficient — you must find an explicit action (API call, handler, UI trigger) in that package's own code before claiming it performs that action.
-- **When in doubt, leave it out.** If you are not 100% certain a fact is supported by code you have read, do not write it. Speculation, educated guesses, and "likely" or "probably" statements are strictly forbidden. Silence is always preferable to a wrong or unverified claim.
+- No narration. Work silently — no "I will...", "Creating...", "Now I'll..." messages.
+- No shell commands. Use Glob (find files), Read (file contents), Grep (search content). Never use `ls`, `find`, `cat`, `head`, `tail`, `grep`.
+- No `mkdir`. Write creates parent directories automatically.
+- Only ask about the codebase when truly ambiguous. Never assume or skip required arguments (see Arguments).
+- **Write in technical documentation style.** Use concise, precise language. Prefer bullet points and short paragraphs over prose. No conversational tone, no filler, no preamble.
+- **Do not enumerate files, folders, or classes.** Documentation must describe concepts, layers, and behaviours — never lists of filenames or directory paths.
+- **Do not complete partial flows.** If only one side of an interaction is visible, document only what you can see. Do not infer what other services do unless you have read their code.
+- **Do not attribute a capability based on circumstantial evidence.** A related constant, config field, or type is not enough — you must find an explicit action (API call, handler, UI trigger) in that code before claiming it does something.
+- **Never mix URLs across services.** A URL found in one service's README or config belongs only to that service. Do not assign it to another service, even if the names or contexts seem related.
+
+## Output location
+Write all output files relative to the **current working directory**, never to a subdirectory discovered during exploration.
 
 ## Arguments
 
-**Before doing anything else** — before reading the codebase, before any steps — resolve the output type and name by following the steps below in order. Do not begin Step 1 until the user has answered every required question.
+**Resolve before doing anything else.** Do not read the codebase or begin any step until both values are confirmed. Never assume or default them.
 
-You may never assume or default these values. Each missing value requires a real response from the user.
-
-Parse $ARGUMENTS as space-separated: first word is output type, second word (if present) is the name.
+Parse $ARGUMENTS: first token = output type, second token (optional) = name.
 
 **Question 1 — if output type is missing:**
 Send this message and stop: "Which output format?  1) Markdown (multiple .md files)  2) PDF (single styled document)"
-Do not ask anything else in the same message. Wait for the user to reply before continuing.
+Wait for the user to reply before continuing.
 
-**Question 2 — if name is missing (ask this as a separate message, after Question 1 is answered):**
-- For **markdown**: send "Output folder name? (default: `docs`)" and stop. Wait for the user to reply.
-- For **pdf**: send "Output file name? (default: `documentation.pdf`)" and stop. Wait for the user to reply.
+**Question 2 — if name is missing (separate message, after Q1 is answered):**
+- Markdown: send "Output folder name? (default: `docs`)" and stop. Wait for reply.
+- PDF: send "Output file name? (default: `documentation.pdf`)" and stop. Wait for reply.
 
 **Rules:**
-- Output type must be `markdown` or `pdf` only
-- For **markdown**: the name is the output folder. If it already exists, ask "Folder `<name>` already exists.  1) Proceed and overwrite  2) Cancel" and wait for reply.
-- For **pdf**: the name is the output PDF file path. Write the temp HTML to `_temp_docs.html` at the project root.
+- Output type must be `markdown` or `pdf`
+- Markdown: name is the output folder. If it already exists, ask "Folder `<name>` already exists.  1) Proceed and overwrite  2) Cancel"
+- PDF: name is the output file path.
 
 ## Steps
 
-### 1. Explore the project codebase
-Gather context before writing anything:
-- Use Glob to map the top-level structure and identify what kind of project this is (language, framework, tooling)
-- Read the primary README or project description file — **treat the README as the authoritative source for deployment URLs, environment names, branch-to-environment mappings, and any information explicitly documented there**
-- Read the dependency manifest (package.json, requirements.txt, go.mod, Cargo.toml, pom.xml, etc.)
-- Read environment/configuration examples if present (.env.example, config.yml.example, etc.)
-- Read the main deployment or infrastructure definition file if present (serverless.yml, docker-compose.yml, Dockerfile, terraform files, etc.)
-- Read CI/CD pipeline configs if present
-- Read 2-3 representative files from each major layer (controllers/routes, services/handlers, models/entities, background workers)
-- Note any existing documentation files at the root or in a /docs folder
+### 1. Explore the codebase
+- Glob the top-level structure to identify language, framework, tooling
+- Read the primary README — **treat it as the authoritative source for deployment URLs, environment names, branch-to-environment mappings, and anything explicitly documented there**
+- Read: dependency manifest (package.json / requirements.txt / go.mod / etc.), .env.example, deployment config (serverless.yml / docker-compose.yml / Dockerfile / terraform), CI/CD pipelines
+- Read 2–3 representative files per major layer (routes, services, models, workers)
+- Note any existing docs
 
-#### Multi-project detection
-If the root contains multiple subdirectories that each look like independent projects (each has its own dependency manifest, Dockerfile, or similar), treat this as a **multi-project repository**:
-- Read the README of **every subproject** — do not skip package-level READMEs. They often contain deployment URLs, environment-specific configuration, and context not present in the root README
-- Explore each subproject the same way you would explore a single project above
-- Determine whether the subprojects are related: look for shared API calls, shared event/message contracts, references to each other's URLs/service names, shared authentication, or shared data stores
-- If they are related, document the **cross-project interactions** as the primary flows in `flows.md` (e.g. "Frontend calls Backend API", "Worker consumes queue published by API"), using sequence diagrams that span multiple services
-- If they are unrelated, document each subproject's internal flows separately, clearly labelled by subproject name
-- **Ignore dead flows**: if a flow, endpoint, or handler exists in one subproject but is never called, triggered, or referenced by any other subproject or by any visible entry point (HTTP call, event, schedule, queue message, UI action), omit it from the documentation entirely. Do not document something just because it exists in the code.
+**Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo:
+- Read every subproject's README
+- Explore each subproject as above
+- Check for cross-project links: shared API calls, event contracts, URLs, auth, data stores
+- Related subprojects → document cross-project interactions as primary flows in `flows.md`
+- Unrelated subprojects → document each separately, labelled by name
+- **Ignore dead flows**: if a flow, endpoint, or handler is never called, triggered, or referenced by any visible entry point (HTTP call, event, schedule, queue message, UI action), omit it entirely. Do not document something just because it exists in the code.
 
 ### 2. Create `architecture.md`
-High-level overview of the system: what kind of application it is, the main structural layers and their responsibilities, and how those layers communicate. Focus on conceptual structure and the infrastructure model — do not enumerate individual files or folders.
+High-level system overview: what it is, the architectural pattern (e.g. MVC, event-driven, microservices), the main structural layers and their responsibilities, and how those layers communicate. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
 ### 3. Create `infrastructure.md`
-Technologies used (languages, frameworks, bundlers, core libraries), how the application is hosted, cloud services, logging, how environments are configured and secrets are stored, and the release process if available. For deployment URLs and environment-to-branch mappings, use the exact values from the READMEs — never use placeholder text like "CloudFront (dev)" when the actual URL is available.
+Languages and runtime versions, frameworks, core libraries, hosting, cloud services, monitoring/alerting (if present), logging, each environment (dev/staging/prod) and how they differ, secrets management, release and deployment process. Use exact URLs and environment names from READMEs — no placeholders.
+
+For multi-project repos, document each subproject's infrastructure in its own clearly labelled section. Do not merge or mix infrastructure details across subprojects.
 
 ### 4. Create `flows.md`
-Main system flows ordered by importance first, then by natural execution order within each flow. Stay high-level — no individual fields or low-level implementation details. Include a Mermaid diagram (sequence or flowchart, whichever fits best) for each flow.
+Main system flows, ordered first by importance, then by the natural sequence in which they occur in the system (e.g. authentication before checkout, onboarding before core actions). High-level only — no individual fields or implementation details. Include a Mermaid diagram (sequence or flowchart) per flow.
 
-**Only include flows with confirmed entry points.** Before adding a flow, verify that it is reachable via an actual entry point — an HTTP route called by the UI, a queue consumer triggered by a producer, a scheduled cron, a Lambda invoked from code, or a UI action backed by a handler. If a flow exists in code but you cannot find evidence that anything calls or triggers it, omit it. Do not document flows speculatively.
+Only include flows with a confirmed entry point (HTTP route, queue consumer, cron, Lambda invocation, UI action). Omit anything unreachable.
 
 ### 5. Create `integrations.md`
-Third-party providers that interact with the application at runtime and require API keys or credentials (e.g. payment gateways, email providers, SMS services, analytics, OAuth providers). For each: why/how it is used, any dependencies (VPN, certificates, etc.), and a link to its documentation.
+Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling), dependencies (VPN, certs, etc.), and a link to its documentation.
 
-Do not include cloud infrastructure services (e.g. AWS, GCP, Azure, or their individual services like S3, SQS, RDS) — those belong in `infrastructure.md` and may be referenced in `flows.md` where relevant.
+Exclude cloud infrastructure (AWS, GCP, Azure and their services) — those belong in `infrastructure.md`.
 
 ### 6. Create `setup.md`
-Comprehensive instructions for running the project for the first time. Do not list or suggest specific environment variable values.
+Comprehensive first-time setup instructions covering:
+- **Prerequisites**: required tools, runtimes, and versions (e.g. Node.js 18, Docker, etc.)
+- **Installation**: how to clone and install dependencies
+- **Environment variables**: if `.env.example` exists, reference it with a single instruction (e.g. "Copy `.env.example` to `.env` and fill in the values") — **stop there, do not read, list, or describe any of its variables**. If no `.env.example` exists, list only the variable names visible in committed config files and instruct the reader to request values from a team member.
+- **Running locally**: the exact command(s) to start the project
+- **Running tests**: the test command, if one exists in the project
 
-For environment variables:
-- If a `.env.example` file exists in the project: reference it directly (e.g. "Copy `.env.example` to `.env` and fill in the values"). Do not enumerate the variables — the file is the source of truth.
-- If no `.env.example` exists: list only the variable names visible in committed config files, and instruct the reader to request the values from a team member.
+### 7. PDF output (skip if format is markdown)
 
-## PDF Output
-
-If the output format is **pdf**, write all sections into a single HTML file using **exactly** the template below (instead of individual `.md` files), then convert with:
-
-```
-node .claude/scripts/html-to-pdf.js <path-to-html> <path-to-output.pdf>
-```
-
-> **Important**: Use this path verbatim. Do NOT expand `.claude/` to `~/.claude/` or any absolute path. The working directory is the project root, so `.claude/scripts/html-to-pdf.js` resolves correctly as-is.
-
-Delete the temporary HTML file after the PDF is successfully generated:
-```
-node .claude/scripts/cleanup.js <path-to-html>
-```
-
-### HTML Template
-
-Read `.claude/templates/docs.html` and fill in these placeholders. **Do not change any CSS, colors, class names, or layout in that file.**
+**Do not write individual `.md` files for PDF output.** Instead, compile all section content into a single HTML file by reading `.claude/templates/docs.html` and filling in these placeholders **exactly**. Do not change any CSS, colors, class names, or layout.
 
 | Placeholder | Value |
 |---|---|
@@ -111,16 +95,16 @@ Read `.claude/templates/docs.html` and fill in these placeholders. **Do not chan
 | `{{COVER_TAG}}` | `Technical Documentation` |
 | `{{DATE}}` | Today's date |
 | `{{TOC_ITEMS}}` | Five `<li>` elements — one per section |
-| `{{SECTIONS}}` | Five `.page.section-page` divs with a `.content` div each |
+| `{{SECTIONS}}` | Five `.page.section-page` divs |
 | `{{MD_SCRIPTS}}` | Five `<script type="text/plain" id="mdN">` tags with raw markdown |
 | `{{SECTION_COUNT}}` | `5` |
 
-TOC `<li>` format:
+TOC item:
 ```html
 <li><span class="toc-num">01</span><span class="toc-label">Architecture</span><span class="toc-desc">System structure, layers, and deployment model</span></li>
 ```
 
-Section page format:
+Section page:
 ```html
 <div class="page section-page">
   <div class="section-header"><div class="section-num">Section 01</div><div class="section-title">Architecture</div></div>
@@ -128,9 +112,19 @@ Section page format:
 </div>
 ```
 
-Markdown script format:
+Markdown script:
 ```html
 <script type="text/plain" id="md1">...raw markdown...</script>
 ```
 
-The five sections in order: Architecture, Infrastructure, System Flows, Integrations, Setup Guide.
+Sections in order: Architecture, Infrastructure, System Flows, Integrations, Setup Guide.
+
+Pipe the HTML directly to the conversion script — do not write any file:
+
+```
+node .claude/scripts/html-to-pdf.js <output-pdf-path> << 'HTMLEOF'
+<html content>
+HTMLEOF
+```
+
+> Use this path verbatim. Do NOT expand `.claude/` to an absolute path. The script handles the temp file and cleanup internally.
