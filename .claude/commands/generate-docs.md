@@ -48,8 +48,8 @@ Wait for the user to reply before continuing.
 - Glob the top-level structure to identify language, framework, tooling
 - Read the primary README — **treat it as the authoritative source for deployment URLs, environment names, branch-to-environment mappings, and anything explicitly documented there**
 - Read: dependency manifest (package.json / requirements.txt / go.mod / etc.), .env.example, deployment config (serverless.yml / docker-compose.yml / Dockerfile / terraform), CI/CD pipelines
-- Read 2–3 representative files per major layer (routes, services, models, workers)
-- Note any existing docs
+- Read 2–3 files per major layer (routes, services, models, workers) — prefer entry-point files and the highest-traffic handlers over helpers or utilities
+- Read any existing docs and treat them as authoritative sources alongside the README
 
 **Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo. Only call it a monorepo if there is a single `.git` folder at the root — if each subdirectory has its own `.git`, they are independent projects; document all of them but do not use the term "monorepo":
 - Read every subproject's README
@@ -60,7 +60,7 @@ Wait for the user to reply before continuing.
 - **Ignore dead flows**: if a flow, endpoint, or handler is never called, triggered, or referenced by any visible entry point (HTTP call, event, schedule, queue message, UI action), omit it entirely. Do not document something just because it exists in the code.
 
 ### 2. Create `architecture.md`
-High-level system overview: what it is, the architectural pattern (e.g. MVC, event-driven, microservices), the main structural layers and their responsibilities, and how those layers communicate. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
+High-level system overview: what it is, the architectural pattern, the main structural layers and their responsibilities, and how those layers communicate. Only name a pattern (e.g. MVC, event-driven, microservices) if it is clearly evident from the code structure — do not assign a label just because a framework is present. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
 ### 3. Create `infrastructure.md`
 Use bullet points for every list. Never write multiple items as a comma-separated sentence. Cover:
@@ -69,9 +69,9 @@ Use bullet points for every list. Never write multiple items as a comma-separate
 - **Core libraries**: one bullet per notable library with its version
 - **Hosting & cloud services**: one bullet per service
 - **Monitoring & alerting**: one bullet per tool (omit if none found)
-- **Logging**: how logs are collected and where they go
+- **Logging**: how logs are collected and where they go — only if the logging destination is explicitly configured in code or config; omit if only a logging library is imported
 - **Environments**: one subsection per environment (dev/staging/prod) describing what differs
-- **Secrets management**: how secrets are stored and injected
+- **Secrets management**: how secrets are stored and injected — only if the mechanism is explicitly visible in code or config, not inferred from a library import or the presence of `.env.example`
 - **Release & deployment**: the exact steps or commands to deploy
 
 Use exact URLs and environment names from READMEs — no placeholders.
@@ -91,14 +91,16 @@ A flow is eligible only if you can trace an unbroken chain from a concrete entry
 Do not document a flow because a handler exists. Document it only because a confirmed trigger calls that handler.
 
 ### 5. Create `integrations.md`
-Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling), dependencies (VPN, certs, etc.), and a link to its documentation.
+Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling — only state the method if you found the corresponding code, not just a URL or config key), dependencies (VPN, certs, etc.), and a link to its documentation.
+
+For each integration's documentation link: use a URL found in the codebase first; if none, search the web. If no authoritative URL is found or the result is ambiguous, omit the documentation link entirely.
 
 Exclude cloud infrastructure (AWS, GCP, Azure and their services) — those belong in `infrastructure.md`.
 
 ### 6. Create `setup.md`
 Comprehensive first-time setup instructions covering:
 - **Prerequisites**: required tools, runtimes, and versions (e.g. Node.js 18, Docker, etc.)
-- **Installation**: how to clone and install dependencies
+- **Installation**: instruct the reader to clone the repository (do not guess the URL) and install dependencies
 - **Environment variables**: if `.env.example` exists, reference it with a single instruction (e.g. "Copy `.env.example` to `.env` and fill in the values") — **stop there, do not read, list, or describe any of its variables**. If no `.env.example` exists, list only the variable names visible in committed config files and instruct the reader to request values from a team member.
 - **Running locally**: the exact command(s) to start the project
 - **Running tests**: the test command, if one exists in the project
