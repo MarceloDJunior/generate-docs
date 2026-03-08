@@ -51,9 +51,9 @@
   .content blockquote { border-left: 3px solid #e2e8f0; padding-left: 14px; margin: 14px 0; color: #64748b; font-style: italic; }
 
   /* Tables */
-  .content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
-  .content th { background: #f8fafc; color: #1e293b; text-align: left; padding: 9px 12px; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; }
-  .content td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; color: #334155; vertical-align: top; }
+  .content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; table-layout: fixed; }
+  .content th { background: #f8fafc; color: #1e293b; text-align: left; padding: 9px 12px; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; word-break: break-word; }
+  .content td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; color: #334155; vertical-align: top; word-break: break-word; overflow-wrap: break-word; }
   .content tr:nth-child(even) td { background: #f8fafc; }
 
   /* Mermaid */
