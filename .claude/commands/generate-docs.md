@@ -9,9 +9,11 @@ Read the codebase and write comprehensive documentation for the project.
 
 > **Write only what you read.** Every claim must trace to code you actually read. If not found, omit it. No guesses, no "likely", no "probably". When in doubt, leave it out.
 
+> **TOOL RESTRICTION — enforced, no exceptions:** Never call Bash for file exploration. The only permitted Bash calls are `node` and `which`. For everything else use the dedicated tools: **Glob** to find files, **Read** to read them, **Grep** to search content. Do NOT use `ls`, `find`, `cat`, `head`, `tail`, or `grep` via Bash — not even once, not even to verify a path.
+
 ## Behavior
 - No narration. Work silently — no "I will...", "Creating...", "Now I'll..." messages.
-- No shell commands. Use Glob (find files), Read (file contents), Grep (search content). Never use `ls`, `find`, `cat`, `head`, `tail`, `grep`.
+- No shell commands for file exploration. Use Glob (find files), Read (file contents), Grep (search content). Never use `ls`, `find`, `cat`, `head`, `tail`, `grep`.
 - No `mkdir`. Write creates parent directories automatically.
 - Only ask about the codebase when truly ambiguous. Never assume or skip required arguments (see Arguments).
 - **Write in technical documentation style.** Use concise, precise language. Prefer bullet points and short paragraphs over prose. No conversational tone, no filler, no preamble.
@@ -19,6 +21,7 @@ Read the codebase and write comprehensive documentation for the project.
 - **Do not complete partial flows.** If only one side of an interaction is visible, document only what you can see. Do not infer what other services do unless you have read their code.
 - **Do not attribute a capability based on circumstantial evidence.** A related constant, config field, or type is not enough — you must find an explicit action (API call, handler, UI trigger) in that code before claiming it does something.
 - **Never mix URLs across services.** A URL found in one service's README or config belongs only to that service. Do not assign it to another service, even if the names or contexts seem related.
+- **Omit empty sections.** If no relevant data exists for a section (e.g. no integrations, no infrastructure config), skip that file entirely. Do not create a file with placeholder text or "none found" notes.
 
 ## Output location
 Write all output files relative to the **current working directory**, never to a subdirectory discovered during exploration.
@@ -114,10 +117,10 @@ Comprehensive first-time setup instructions covering:
 | `{{TITLE}}` | Project name |
 | `{{COVER_TAG}}` | `Technical Documentation` |
 | `{{DATE}}` | Today's date |
-| `{{TOC_ITEMS}}` | Five `<li>` elements — one per section |
-| `{{SECTIONS}}` | Five `.page.section-page` divs |
-| `{{MD_SCRIPTS}}` | Five `<script type="text/plain" id="mdN">` tags with raw markdown |
-| `{{SECTION_COUNT}}` | `5` |
+| `{{TOC_ITEMS}}` | One `<li>` per included section |
+| `{{SECTIONS}}` | One `.page.section-page` div per included section |
+| `{{MD_SCRIPTS}}` | One `<script type="text/plain" id="mdN">` tag per included section |
+| `{{SECTION_COUNT}}` | Number of included sections |
 
 TOC item:
 ```html
@@ -137,7 +140,7 @@ Markdown script:
 <script type="text/plain" id="md1">...raw markdown...</script>
 ```
 
-Sections in order: Architecture, Infrastructure, System Flows, Integrations, Setup Guide.
+Sections in order (include only sections that have content): Architecture, Infrastructure, System Flows, Integrations, Setup Guide.
 
 Pipe the HTML directly to the conversion script — do not write any file:
 
