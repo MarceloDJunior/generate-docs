@@ -110,44 +110,24 @@ Comprehensive first-time setup instructions covering:
 
 ### 7. PDF output (skip if format is markdown)
 
-**Do not write individual `.md` files for PDF output.** Instead, compile all section content into a single HTML file by reading `.claude/templates/docs.html` and filling in these placeholders **exactly**. Do not change any CSS, colors, class names, or layout.
-
-| Placeholder | Value |
-|---|---|
-| `{{TITLE}}` | Project name |
-| `{{COVER_TAG}}` | `Technical Documentation` |
-| `{{DATE}}` | Today's date |
-| `{{TOC_ITEMS}}` | One `<li>` per included section |
-| `{{SECTIONS}}` | One `.page.section-page` div per included section |
-| `{{MD_SCRIPTS}}` | One `<script type="text/plain" id="mdN">` tag per included section |
-| `{{SECTION_COUNT}}` | Number of included sections |
-
-TOC item:
-```html
-<li><span class="toc-num">01</span><span class="toc-label">Architecture</span><span class="toc-desc">System structure, layers, and deployment model</span></li>
-```
-
-Section page:
-```html
-<div class="page section-page">
-  <div class="section-header"><div class="section-num">Section 01</div><div class="section-title">Architecture</div></div>
-  <div class="content" id="s1"></div>
-</div>
-```
-
-Markdown script:
-```html
-<script type="text/plain" id="md1">...raw markdown...</script>
-```
-
-Sections in order (include only sections that have content): Architecture, Infrastructure, System Flows, Integrations, Setup Guide.
-
-Pipe the HTML directly to the conversion script — do not write any file:
+First, resolve the OS temp directory:
 
 ```
-node .claude/scripts/html-to-pdf.js <output-pdf-path> << 'HTMLEOF'
-<html content>
-HTMLEOF
+node -e "console.log(require('os').tmpdir())"
 ```
 
-> Use this path verbatim. Do NOT expand `.claude/` to an absolute path. The script handles the temp file and cleanup internally.
+Write each included section as a `.md` file into `<tmpdir>/docs-<timestamp>/`, using the canonical filenames: `architecture.md`, `infrastructure.md`, `flows.md`, `integrations.md`, `setup.md`.
+
+Then run:
+
+```
+node .claude/scripts/md-to-pdf.js <tmpdir>/docs-<timestamp>/ <output-pdf-path> --title "<project name>"
+```
+
+Then delete the temporary folder:
+
+```
+node .claude/scripts/cleanup.js <tmpdir>/docs-<timestamp>/
+```
+
+> Use these paths verbatim. Do NOT expand `.claude/` to an absolute path.
