@@ -3,6 +3,7 @@ description: Convert existing markdown files to a PDF
 argument-hint: [md-file-or-folder] [output.pdf] [--no-cover]
 allowed-tools: Bash(node *), Bash(test *)
 model: sonnet
+context: fork
 ---
 
 Convert one markdown file or a folder of markdown files into a single styled PDF.

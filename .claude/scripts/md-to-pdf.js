@@ -86,17 +86,7 @@ function extractSection(filePath) {
   const base    = path.basename(filePath, '.md');
   const title   = base.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  // First sentence of first non-heading, non-empty paragraph
-  let desc = '';
-  for (const line of content.split('\n')) {
-    const t = line.trim();
-    if (!t || t.startsWith('#')) continue;
-    const sentence = t.split(/(?<=[.!?])\s/)[0];
-    desc = sentence.length > 120 ? sentence.slice(0, 117) + '...' : sentence;
-    break;
-  }
-
-  return { title, desc, content };
+  return { title, content };
 }
 
 const sections = filePaths.map(extractSection);
@@ -142,9 +132,17 @@ let html = fs.readFileSync(templatePath, 'utf8');
 
 const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+// cover(1) + toc(1) + sections start at page 3
+// if --no-cover: toc(1) + sections start at page 2
+// if single section (no toc): cover(1) + section at page 2, or just page 1 if no cover
+const hasCover = !flags.noCover;
+const hasToc   = sections.length > 1;
+const firstSectionPage = (hasCover ? 1 : 0) + (hasToc ? 1 : 0) + 1;
+
 const tocItems = sections.map((s, i) => {
-  const n = String(i + 1).padStart(2, '0');
-  return `<li><span class="toc-num">${n}</span><span class="toc-label">${s.title}</span><span class="toc-desc">${s.desc}</span></li>`;
+  const n    = String(i + 1).padStart(2, '0');
+  const page = String(firstSectionPage + i).padStart(2, '0');
+  return `<li><span class="toc-num">${n}</span><span class="toc-label">${s.title}</span><span class="toc-pg">${page}</span></li>`;
 }).join('\n');
 
 const sectionPages = sections.map((s, i) => {
