@@ -56,7 +56,13 @@ Wait for the user to reply before continuing.
 - If a gap cannot be filled from the files read within this cap, omit that claim rather than infer it
 - Read any existing docs and treat them as authoritative sources alongside the README
 
-**Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo. Only call it a monorepo if there is a single `.git` folder at the root — if each subdirectory has its own `.git`, they are independent projects; document all of them but do not use the term "monorepo":
+**Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo. Only call it a monorepo if there is a single `.git` folder at the root — if each subdirectory has its own `.git`, they are independent projects; do not use the term "monorepo".
+
+When multiple projects are detected, send this message and stop:
+"Found multiple projects: <list each by name>. Which should I document? (comma-separated, or 'all')"
+Wait for the user to reply before continuing. Only document the projects the user selected.
+
+Then for each selected project:
 - Read every subproject's README
 - Explore each subproject as above
 - Check for cross-project links: shared API calls, event contracts, URLs, auth, data stores
