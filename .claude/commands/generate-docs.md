@@ -27,15 +27,15 @@ Write all output files relative to the **current working directory**, never to a
 
 ## Arguments
 
-**Resolve before doing anything else.** Do not read the codebase or begin any step until both values are confirmed. Never assume or default them.
+**Resolve before doing anything else.** Do not read the codebase or begin any step until both values are confirmed.
 
-Parse $ARGUMENTS: first token = output type, second token (optional) = name.
+Parse $ARGUMENTS: first token = output type, second token (optional) = name. **If both are present and valid, proceed immediately — do not ask.**
 
-**Question 1 — if output type is missing:**
+**Question 1 — only if output type is missing or not `markdown`/`pdf`:**
 Send this message and stop: "Which output format?  1) Markdown (multiple .md files)  2) PDF (single styled document)"
 Wait for the user to reply before continuing.
 
-**Question 2 — if name is missing (separate message, after Q1 is answered):**
+**Question 2 — only if name is missing (separate message, after Q1 is answered):**
 - Markdown: send "Output folder name? (default: `docs`)" and stop. Wait for reply.
 - PDF: send "Output file name? (default: `documentation.pdf`)" and stop. Wait for reply.
 
