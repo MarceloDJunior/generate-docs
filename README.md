@@ -62,3 +62,5 @@ curl -fsSL https://raw.githubusercontent.com/MarceloDJunior/generate-docs/main/i
 ```
 
 That's it. The `/generate-docs` and `/md-to-pdf` commands will be available the next time you open Claude Code in that project.
+
+**No `curl`?** Download the [ZIP archive](https://github.com/MarceloDJunior/generate-docs/archive/refs/heads/main.zip), extract it, and copy the `.claude` folder into your project root.
