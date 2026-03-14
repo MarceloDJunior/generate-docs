@@ -3,7 +3,6 @@ description: Generate documentation from the project codebase
 argument-hint: [markdown|pdf] [folder-or-filename]
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash(node *), Bash(which *), WebSearch, WebFetch
 model: sonnet
-context: fork
 ---
 
 Read the codebase and write comprehensive documentation for the project.
@@ -11,8 +10,8 @@ Read the codebase and write comprehensive documentation for the project.
 > **Write only what you read.** Every claim must trace to code you actually read. If not found, omit it. No guesses, no "likely", no "probably". When in doubt, leave it out.
 
 ## Behavior
-- No narration. Work silently — no "I will...", "Creating...", "Now I'll..." messages.
-- **Never use Bash for file exploration.** The only permitted Bash calls are `node` and `which`. Use Glob to find files, Read to read them, Grep to search content. Never call `ls`, `find`, `cat`, `head`, `tail`, or `grep` via Bash.
+- **Work silently. Do not print anything to the terminal while working** — no status updates, no "I will...", "Creating...", "Now I'll...", no progress messages, no summaries. The only permitted output is questions to the user (see Arguments) and a final confirmation when all files are written.
+- **Never use Bash for file exploration — no exceptions.** The only permitted Bash calls are `node` and `which`. Use Glob to find files (including checking if a folder or file exists), Read to read them, Grep to search content. Never call `ls`, `find`, `cat`, `head`, `tail`, `grep`, or `test` via Bash for any reason.
 - Only ask about the codebase when truly ambiguous. Never assume or skip required arguments (see Arguments).
 - **Write in technical documentation style.** Use concise, precise language. Prefer bullet points and short paragraphs over prose. No conversational tone, no filler, no preamble.
 - **Do not enumerate files, folders, or classes.** Documentation must describe concepts, layers, and behaviours — never lists of filenames or directory paths.
@@ -25,28 +24,26 @@ Read the codebase and write comprehensive documentation for the project.
 ## Output location
 Write all output files relative to the **current working directory**, never to a subdirectory discovered during exploration.
 
-## Arguments
-
-**Resolve before doing anything else.** Do not read the codebase or begin any step until both values are confirmed.
-
-Parse $ARGUMENTS: first token = output type, second token (optional) = name. **If both are present and valid, proceed immediately — do not ask.**
-
-**Question 1 — only if output type is missing or not `markdown`/`pdf`:**
-Send this message and stop: "Which output format?  1) Markdown (multiple .md files)  2) PDF (single styled document)"
-Wait for the user to reply before continuing.
-
-**Question 2 — only if name is missing (separate message, after Q1 is answered):**
-- Markdown: send "Output folder name? (default: `docs`)" and stop. Wait for reply.
-- PDF: send "Output file name? (default: `documentation.pdf`)" and stop. Wait for reply.
-
-**Rules:**
-- Output type must be `markdown` or `pdf`
-- Markdown: name is the output folder. If it already exists, ask "Folder `<name>` already exists.  1) Proceed and overwrite  2) Cancel"
-- PDF: name is the output file path.
-
 ## Steps
 
-### 1. Explore the codebase
+### 1. Resolve arguments
+
+Parse `$ARGUMENTS` only — never infer values from the command text or any other source. First token = output type, second token (optional) = name.
+
+**1a — Output type:** If `$ARGUMENTS` is empty or the first token is not exactly `markdown` or `pdf`, ask:
+> "Which output format?  1) Markdown (multiple .md files)  2) PDF (single styled document)"
+Wait for the reply before continuing.
+
+**1b — Output name:** If no name token was in `$ARGUMENTS`, ask:
+- For markdown: "Output folder name? (default: `docs`)"
+- For PDF: "Output file name? (default: `documentation.pdf`)"
+Wait for the reply. Never apply a default silently.
+
+For markdown output: if the folder already exists, ask "Folder `<name>` already exists.  1) Proceed and overwrite  2) Cancel" and wait for the reply.
+
+**Do not begin Step 2 until both values are confirmed.**
+
+### 2. Explore the codebase
 - Glob the top-level structure to identify language, framework, tooling
 - Read the primary README — **treat it as the authoritative source for deployment URLs, environment names, branch-to-environment mappings, and anything explicitly documented there**
 - Read: dependency manifest (package.json / requirements.txt / go.mod / etc.), .env.example, deployment config (serverless.yml / docker-compose.yml / Dockerfile / terraform), CI/CD pipelines
@@ -58,11 +55,11 @@ Wait for the user to reply before continuing.
 
 **Multi-project repos:** if multiple subdirectories each have their own dependency manifest or Dockerfile, treat as a multi-project repo. Only call it a monorepo if there is a single `.git` folder at the root — if each subdirectory has its own `.git`, they are independent projects; do not use the term "monorepo".
 
-When multiple projects are detected, send this message and stop:
-"Found multiple projects: <list each by name>. Which should I document? (comma-separated, or 'all')"
-Wait for the user to reply before continuing. Only document the projects the user selected.
+If multiple projects are detected, ask:
+> "Found multiple projects: <list each by name>. Which should I document? (comma-separated, or 'all')"
+Wait for the reply. Only explore the selected projects.
 
-Then for each selected project:
+For each selected project:
 - Read every subproject's README
 - Explore each subproject as above
 - Check for cross-project links: shared API calls, event contracts, URLs, auth, data stores
@@ -70,10 +67,10 @@ Then for each selected project:
 - Unrelated subprojects → document each separately, labelled by name
 - **Ignore dead flows**: if a flow, endpoint, or handler is never called, triggered, or referenced by any visible entry point (HTTP call, event, schedule, queue message, UI action), omit it entirely. Do not document something just because it exists in the code.
 
-### 2. Create `architecture.md`
+### 3. Create `architecture.md`
 High-level system overview: what it is, the architectural pattern, the main structural layers and their responsibilities, and how those layers communicate. Only name a pattern (e.g. MVC, event-driven, microservices) if it is clearly evident from the code structure — do not assign a label just because a framework is present. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
-### 3. Create `infrastructure.md`
+### 4. Create `infrastructure.md`
 Use bullet points for every list. Never write multiple items as a comma-separated sentence. Cover:
 - **Languages & runtimes**: one bullet per language/runtime with its version
 - **Frameworks**: one bullet per framework with its version
@@ -91,7 +88,7 @@ Use exact URLs and environment names from READMEs — no placeholders. **Never c
 
 For multi-project repos, document each subproject's infrastructure in its own clearly labelled section. Do not merge or mix infrastructure details across subprojects.
 
-### 4. Create `flows.md`
+### 5. Create `flows.md`
 Write all eligible main system flows. **Finish all flows in one group before starting the next** — do not interleave groups:
 1. Core product flows (the main thing the product does)
 2. Auth flows (login, logout, token refresh, password reset)
@@ -100,6 +97,18 @@ Write all eligible main system flows. **Finish all flows in one group before sta
 5. Admin flows
 
 Within each group, follow natural sequence (e.g. registration before login, login before checkout). High-level only — no individual fields or implementation details. Include a Mermaid diagram (sequence or flowchart) per flow.
+
+**Flow headings must be descriptive names only** — never include the group type in the heading (e.g. use `## Deal Submission`, not `## Core Flow: Deal Submission`).
+
+**Classification rules — based on outcome, not trigger:**
+- **Core**: the outcome directly delivers or advances the product's primary business value. The trigger (user, SQS, webhook, external system) does not matter — ask "does the result of this flow fulfil the main purpose of the product?" If yes, it's core.
+- **Supporting**: the outcome assists, maintains, or retries other flows — notifications, cleanup, scheduled reruns, retries, and background workers whose result is secondary to the main product value.
+- Scheduled/cron-triggered flows are almost always supporting unless their outcome is the primary product value itself.
+
+**Frequency and importance gate — apply before including any flow:**
+- Only include flows that run regularly as part of normal operation.
+- Exclude one-off or rare operational flows (rollbacks, data fixes, manual overrides) — these are not the system's regular behaviour.
+- When multiple background workers exist, only include those whose outcome is essential; omit lower-priority, redundant, or recovery workers.
 
 **Never mention file names, function names, or class names in flow descriptions.** Describe behaviour and actors only — what happens, who initiates it, what system responds. Use layer or service names (e.g. "API", "Auth Service", "Database"), not the names of the files or functions that implement them.
 
@@ -127,7 +136,7 @@ A flow is eligible only if you can trace an unbroken chain from a concrete entry
 
 Do not document a flow because a handler exists. Document it only because a confirmed trigger calls that handler.
 
-### 5. Create `integrations.md`
+### 6. Create `integrations.md`
 Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling — only state the method if you found the corresponding code, not just a URL or config key), dependencies (VPN, certs, etc.), and a link to its documentation.
 
 For each integration's documentation link: use a URL found in the codebase first. If none is found, only search the web if the provider is a well-known public service (e.g. Stripe, Twilio, SendGrid, Firebase) — skip the search for internal tools, obscure libraries, or anything that looks custom. If no authoritative URL is found or the result is ambiguous, omit the link entirely.
@@ -141,7 +150,7 @@ Exclude cloud infrastructure (AWS, GCP, Azure and their services) — those belo
 **Self-check after writing `integrations.md`:**
 For each integration heading, run a case-insensitive Grep (`output_mode: files_with_matches`) for that exact name against the codebase. If no files match, remove that integration's section entirely. This must be done before moving to the next step.
 
-### 6. Create `setup.md`
+### 7. Create `setup.md`
 Comprehensive first-time setup instructions covering:
 - **Prerequisites**: required tools, runtimes, and versions (e.g. Node.js 18, Docker, etc.)
 - **Installation**: instruct the reader to clone the repository (do not guess the URL) and install dependencies
@@ -149,7 +158,7 @@ Comprehensive first-time setup instructions covering:
 - **Running locally**: the exact command(s) to start the project — must come from `package.json` scripts, a Makefile, or README. Never guess a command from convention.
 - **Running tests**: the test command — same rule, must be explicitly found. Omit if not found.
 
-### 7. PDF output (skip if format is markdown)
+### 8. PDF output (skip if format is markdown)
 
 First, resolve the OS temp directory:
 
