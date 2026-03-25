@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * md-to-pdf.js  <input> <output.pdf> [--no-cover] [--overwrite] [--title "..."] [--tag "..."]
+ * md-to-pdf.js  <input> <output.pdf> [--no-cover] [--no-toc] [--overwrite] [--title "..."] [--tag "..."]
  *
  * input  — path to a single .md file or a folder of .md files
  * output — destination PDF path
@@ -16,11 +16,12 @@ const os = require('os');
 // ── Arg parsing ──────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
-const flags = { noCover: false, overwrite: false, title: null, tag: null };
+const flags = { noCover: false, noToc: false, overwrite: false, title: null, tag: null };
 const positional = [];
 
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--no-cover')           { flags.noCover = true; }
+  else if (argv[i] === '--no-toc')        { flags.noToc = true; }
   else if (argv[i] === '--overwrite')     { flags.overwrite = true; }
   else if (argv[i] === '--title')         { flags.title = argv[++i]; }
   else if (argv[i] === '--tag')           { flags.tag = argv[++i]; }
@@ -30,7 +31,7 @@ for (let i = 0; i < argv.length; i++) {
 const [inputArg, outputArg] = positional;
 
 if (!inputArg || !outputArg) {
-  console.error('Usage: node md-to-pdf.js <input> <output.pdf> [--no-cover] [--overwrite] [--title "..."] [--tag "..."]');
+  console.error('Usage: node md-to-pdf.js <input> <output.pdf> [--no-cover] [--no-toc] [--overwrite] [--title "..."] [--tag "..."]');
   process.exit(1);
 }
 
@@ -82,9 +83,13 @@ if (filePaths.length === 0) {
 // ── Section extraction ────────────────────────────────────────────────────────
 
 function extractSection(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const raw     = fs.readFileSync(filePath, 'utf8');
   const base    = path.basename(filePath, '.md');
-  const title   = base.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const h1Match = raw.match(/^#\s+(.+)/m);
+  const title   = h1Match
+    ? h1Match[1].trim()
+    : base.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const content = h1Match ? raw.replace(/^#\s+.+\n?/, '') : raw;
 
   return { title, content };
 }
@@ -136,7 +141,7 @@ const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '
 // if --no-cover: toc(1) + sections start at page 2
 // if single section (no toc): cover(1) + section at page 2, or just page 1 if no cover
 const hasCover = !flags.noCover;
-const hasToc   = sections.length > 1;
+const hasToc   = sections.length > 1 && !flags.noToc;
 const firstSectionPage = (hasCover ? 1 : 0) + (hasToc ? 1 : 0) + 1;
 
 const tocItems = sections.map((s, i) => {
@@ -147,8 +152,10 @@ const tocItems = sections.map((s, i) => {
 
 const sectionPages = sections.map((s, i) => {
   const n = String(i + 1).padStart(2, '0');
-  return `<div class="page section-page">
-  <div class="section-header"><div class="section-num">Section ${n}</div><div class="section-title">${s.title}</div></div>
+  const header = (flags.noToc && sections.length === 1)
+    ? ''
+    : `\n  <div class="section-header"><div class="section-num">Section ${n}</div><div class="section-title">${s.title}</div></div>`;
+  return `<div class="page section-page">${header}
   <div class="content" id="s${i + 1}"></div>
 </div>`;
 }).join('\n');
@@ -167,10 +174,10 @@ html = html
   .replace('{{SECTION_COUNT}}', String(sections.length));
 
 if (flags.noCover) {
-  html = html.replace(/<div class="page cover">[\s\S]*?<\/div>(?=\s*<div)/, '');
+  html = html.replace(/<div class="page cover">[\s\S]*?<\/div>\s*(?=<div class="page )/, '');
 }
-if (sections.length === 1) {
-  html = html.replace(/<div class="page toc-page">[\s\S]*?<\/div>(?=\s*<div)/, '');
+if (sections.length === 1 || flags.noToc) {
+  html = html.replace(/<div class="page toc-page">[\s\S]*?<\/div>\s*(?=<div class="page )/, '');
 }
 
 // ── PDF conversion ────────────────────────────────────────────────────────────

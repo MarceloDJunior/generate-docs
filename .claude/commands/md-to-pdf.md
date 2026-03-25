@@ -1,6 +1,6 @@
 ---
 description: Convert existing markdown files to a PDF
-argument-hint: [md-file-or-folder] [output.pdf] [--no-cover]
+argument-hint: [md-file-or-folder] [output.pdf] [--no-cover] [--no-toc]
 allowed-tools: Bash(node *), Bash(test *), Read, Glob
 model: sonnet
 ---
@@ -13,6 +13,7 @@ Parse $ARGUMENTS as space-separated tokens:
 - First non-flag token: path to a `.md` file or a folder of `.md` files
 - Second non-flag token (optional): output PDF path
 - `--no-cover`: flag (any position) — omit the cover page
+- `--no-toc`: flag (any position) — omit the table of contents
 
 **Resolve before doing anything else.**
 
@@ -40,7 +41,7 @@ If it prints `EXISTS`, ask: "File `<path>` already exists. Overwrite? (y/n)" and
 ### 5. Run the conversion script
 
 ```
-node .claude/scripts/md-to-pdf.js <input-path> <output-path> --title "<resolved-title>" [--no-cover] [--overwrite]
+node .claude/scripts/md-to-pdf.js <input-path> <output-path> --title "<resolved-title>" [--no-cover] [--no-toc] [--overwrite]
 ```
 
 > Use this path verbatim. Do NOT expand `.claude/` to an absolute path.
