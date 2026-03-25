@@ -68,13 +68,15 @@ For each selected project:
 - **Ignore dead flows**: if a flow, endpoint, or handler is never called, triggered, or referenced by any visible entry point (HTTP call, event, schedule, queue message, UI action), omit it entirely. Do not document something just because it exists in the code.
 
 ### 3. Create `architecture.md`
-High-level system overview: what it is, the architectural pattern, the main structural layers and their responsibilities, and how those layers communicate. Only name a pattern (e.g. MVC, event-driven, microservices) if it is clearly evident from the code structure — do not assign a label just because a framework is present. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
+Start with a brief system overview: what the system does and who uses it — but only if that information is explicitly stated in a README, existing docs, or is unambiguously evident from the code. Do not invent a description or pad with generic filler. If the purpose or audience cannot be clearly determined, omit those sentences entirely.
+
+Then cover: the architectural pattern, the main structural layers and their responsibilities, and how those layers communicate. Only name a pattern (e.g. MVC, event-driven, microservices) if it is clearly evident from the code structure — do not assign a label just because a framework is present. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
 ### 4. Create `infrastructure.md`
 Use bullet points for every list. Never write multiple items as a comma-separated sentence. Cover:
-- **Languages & runtimes**: one bullet per language/runtime with its version
-- **Frameworks**: one bullet per framework with its version
-- **Core libraries**: one bullet per notable library with its version
+- **Languages & runtimes**: one bullet per language/runtime with its major version
+- **Frameworks**: one bullet per framework with its major version
+- **Core libraries**: one bullet per notable library with its major version
 - **Hosting & cloud services**: one bullet per service
 - **Monitoring & alerting**: one bullet per tool (omit if none found)
 - **Logging**: how logs are collected and where they go — only if the logging destination is explicitly configured in code or config; omit if only a logging library is imported
@@ -84,7 +86,9 @@ Use bullet points for every list. Never write multiple items as a comma-separate
 
 Use exact URLs and environment names from READMEs — no placeholders. **Never construct a URL** — every URL written must be copied verbatim from the codebase or README.
 
-**Version numbers** must come from a manifest file (package.json, requirements.txt, go.mod, Dockerfile, etc.). If a version is not explicitly stated in a file you read, omit it rather than recall it from memory.
+**Major version only** — derive from the manifest file (package.json, requirements.txt, go.mod, Dockerfile, etc.) and strip minor and patch (e.g. `18.2.1` → `18`, `^3.4.0` → `3`). If no version is found in a file you read, omit it rather than recall it from memory.
+
+**Core libraries** — only include libraries that are central to how the system works (e.g. ORM, HTTP client, auth, queue client). Do not list every dependency.
 
 For multi-project repos, document each subproject's infrastructure in its own clearly labelled section. Do not merge or mix infrastructure details across subprojects.
 
@@ -139,6 +143,8 @@ Do not document a flow because a handler exists. Document it only because a conf
 ### 6. Create `integrations.md`
 Third-party providers that interact with the app at runtime and require API keys or credentials (e.g. payment gateways, email, SMS, analytics, OAuth providers). For each: purpose, how it is integrated (webhook, REST API call, SDK, polling — only state the method if you found the corresponding code, not just a URL or config key), dependencies (VPN, certs, etc.), and a link to its documentation.
 
+**Never mention environment variable names, file names, or function names** in integration descriptions. Describe behaviour and method only.
+
 For each integration's documentation link: use a URL found in the codebase first. If none is found, only search the web if the provider is a well-known public service (e.g. Stripe, Twilio, SendGrid, Firebase) — skip the search for internal tools, obscure libraries, or anything that looks custom. If no authoritative URL is found or the result is ambiguous, omit the link entirely.
 
 Exclude cloud infrastructure (AWS, GCP, Azure and their services) — those belong in `infrastructure.md`.
@@ -152,9 +158,9 @@ For each integration heading, run a case-insensitive Grep (`output_mode: files_w
 
 ### 7. Create `setup.md`
 Comprehensive first-time setup instructions covering:
-- **Prerequisites**: required tools, runtimes, and versions (e.g. Node.js 18, Docker, etc.)
+- **Prerequisites**: required tools and runtimes with **major version only** (e.g. `Node.js 18`, `Python 3`, `Docker 24`) — derive from manifest files or Dockerfiles, same rule as `infrastructure.md`
 - **Installation**: instruct the reader to clone the repository (do not guess the URL) and install dependencies
-- **Environment variables**: if `.env.example` exists, reference it with a single instruction (e.g. "Copy `.env.example` to `.env` and fill in the values") — **stop there, do not read, list, or describe any of its variables**. If no `.env.example` exists, list only the variable names visible in committed config files and instruct the reader to request values from a team member.
+- **Environment variables**: if `.env.example` exists, reference it with a single instruction (e.g. "Copy `.env.example` to `.env` and fill in the values") — **stop there, do not read, list, or describe any of its variables**. If no `.env.example` exists, write only: "Ask a team member for the required environment variables." Do not list variable names.
 - **Running locally**: the exact command(s) to start the project — must come from `package.json` scripts, a Makefile, or README. Never guess a command from convention.
 - **Running tests**: the test command — same rule, must be explicitly found. Omit if not found.
 
