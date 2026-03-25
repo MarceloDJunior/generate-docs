@@ -72,11 +72,13 @@ Start with a brief system overview: what the system does and who uses it — but
 
 Then cover: the architectural pattern, the main structural layers and their responsibilities, and how those layers communicate. Only name a pattern (e.g. MVC, event-driven, microservices) if it is clearly evident from the code structure — do not assign a label just because a framework is present. Focus on conceptual structure — **do not enumerate individual files, folders, or classes**.
 
+Close `architecture.md` with a **## Key Concepts** section: a short glossary of domain-specific terms a new engineer would need to understand the codebase. Derive terms from entity names, route names, and domain model names found in the code. One bullet per term: `**Term** — one-sentence definition`. Only include terms that are non-obvious or specific to this domain — skip generic terms like "user", "request", or "response". If no domain-specific terms can be identified, omit this section entirely.
+
 ### 4. Create `infrastructure.md`
 Use bullet points for every list. Never write multiple items as a comma-separated sentence. Cover:
 - **Languages & runtimes**: one bullet per language/runtime with its major version
 - **Frameworks**: one bullet per framework with its major version
-- **Core libraries**: one bullet per notable library with its major version
+- **Core libraries**: one bullet per notable library — no version
 - **Hosting & cloud services**: one bullet per service
 - **Monitoring & alerting**: one bullet per tool (omit if none found)
 - **Logging**: how logs are collected and where they go — only if the logging destination is explicitly configured in code or config; omit if only a logging library is imported
